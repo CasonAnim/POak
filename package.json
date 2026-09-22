@@ -1,0 +1,13 @@
+{
+  "name": "poak",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev:app": "npm run dev --prefix app",
+    "dev:server": "npm run dev --prefix server",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:app\""
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
+}
