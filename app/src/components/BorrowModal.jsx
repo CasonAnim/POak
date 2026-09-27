@@ -1,0 +1,253 @@
+import React, { useState } from 'react';
+import { X, Calendar, FolderGit2, CheckCircle2 } from 'lucide-react';
+import API from '../axios';
+
+export default function BorrowModal({ item, onClose, onSuccess }) {
+  // สเต็ป 1 = ดูรายละเอียดตามรูป UI, สเต็ป 2 = กรอกฟอร์มยืม
+  const [step, setStep] = useState(1);
+  const [project, setProject] = useState('');
+  const [purpose, setPurpose] = useState('');
+  const [expectedReturnDate, setExpectedReturnDate] = useState('');
+  const [quantity, setQuantity] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [imgError, setImgError] = useState(false);
+
+  const available = Number(item.availableQuantity) || 0;
+  const isAvailable = available > 0;
+
+  // ฟังก์ชันแปลง path รูปภาพให้ดึงจาก backend uploads
+  const getImageUrl = (img) => {
+    if (!img) return null;
+    // ถ้าเป็น Full URL (http:// หรือ https://) หรือ data:image ให้ใช้ค่านั้นตรงๆ
+    if (img.startsWith('http://') || img.startsWith('https://') || img.startsWith('data:')) {
+      return img;
+    }
+    // ดึง base URL ของเซิร์ฟเวอร์ (ปรับพอร์ตให้ตรงกับ Backend ของคุณ เช่น http://localhost:5000)
+    const backendBaseUrl = (API.defaults.baseURL || 'http://localhost:5000').replace(/\/api\/?$/, '');
+    return `${backendBaseUrl}/uploads/${img}`;
+  };
+
+  const imageSrc = getImageUrl(item.image);
+
+  // ส่งคำขอยืมไปที่ Backend
+  const handleSubmitBorrow = async (e) => {
+    e.preventDefault();
+    setErrorMsg('');
+    setLoading(true);
+
+    try {
+      const payload = {
+        project,
+        purpose,
+        expectedReturnDate,
+        items: [
+          {
+            equipmentId: item._id,
+            quantity: Number(quantity)
+          }
+        ]
+      };
+
+      await API.post('/transactions/request', payload);
+      onSuccess();
+    } catch (err) {
+      setErrorMsg(err.response?.data?.message || 'ส่งคำขอยืมไม่สำเร็จ');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+      {/* Container หลัก: แบ่งฝั่งซ้าย-ขวาตามดีไซน์ */}
+      <div className="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl relative flex flex-col md:flex-row border border-gray-100">
+        
+        {/* ปุ่มกากบาทปิด Modal (มุมขวาบน) */}
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 z-20 text-gray-400 hover:text-black p-1 transition cursor-pointer"
+        >
+          <X size={18} />
+        </button>
+
+        {/* --- ฝั่งซ้าย: พื้นหลังดำ + โชว์ item id และ item pic --- */}
+        <div className="w-full md:w-5/12 bg-black text-white p-8 flex flex-col justify-between items-center relative min-h-[260px] md:min-h-[380px]">
+          {/* item id */}
+          <span className="self-end text-[10px] font-mono text-gray-400 tracking-wider">
+            {item.equipCode || item.code || 'EQ-001'}
+          </span>
+
+          {/* item pic ในวงกลม รองรับรูปจาก Multer */}
+          <div className="w-36 h-36 rounded-full bg-[#111111] border border-gray-800 flex items-center justify-center overflow-hidden my-auto p-2">
+            {imageSrc && !imgError ? (
+              <img
+                src={imageSrc}
+                alt={item.name}
+                onError={() => setImgError(true)}
+                className="w-full h-full object-contain"
+              />
+            ) : (
+              <span className="text-4xl">🔬</span>
+            )}
+          </div>
+
+          <div className="text-[11px] text-gray-500 font-mono tracking-wider">
+            P.I.M EQUIPMENT SYSTEM
+          </div>
+        </div>
+
+        {/* --- ฝั่งขวา: พื้นหลังขาว + รายละเอียด --- */}
+        <div className="w-full md:w-7/12 p-8 flex flex-col justify-between bg-white">
+          {step === 1 ? (
+            // ================== หน้า 1: แสดงตามภาพ Pop-up ==================
+            <div className="space-y-6">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                  {item.type || item.category || 'LAB EQUIPMENT'}
+                </span>
+                <h2 className="text-2xl font-bold text-gray-900 mt-1">
+                  {item.name}
+                </h2>
+                <p className="text-xs text-gray-500 mt-2 leading-relaxed">
+                  {item.details || item.description || 'Bench-ready meter for quick readings across liquid samples.'}
+                </p>
+
+                {/* status badge */}
+                <div className="mt-3">
+                  {isAvailable ? (
+                    <span className="inline-block bg-black text-white text-[10px] font-medium px-3 py-0.5 rounded-full">
+                      Available ({available} in stock)
+                    </span>
+                  ) : (
+                    <span className="inline-block bg-red-100 text-red-600 text-[10px] font-medium px-3 py-0.5 rounded-full">
+                      Out of stock
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* ข้อมูล Storage & Status */}
+              <div className="space-y-2 border-t border-gray-100 pt-4 text-xs">
+                <div className="flex justify-between text-gray-500">
+                  <span>Last checked</span>
+                  <span className="text-gray-900 font-medium">
+                    {item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : '12 Mar 2026'}
+                  </span>
+                </div>
+                <div className="flex justify-between text-gray-500">
+                  <span>Storage</span>
+                  <span className="text-gray-900 font-medium">
+                    {item.storageLocation || 'North bench - Bay 02'}
+                  </span>
+                </div>
+              </div>
+
+              {/* ปุ่ม Add to active work > ตามรูป */}
+              <button
+                onClick={() => setStep(2)}
+                disabled={!isAvailable}
+                className="w-full bg-black hover:bg-gray-800 text-white py-3 rounded-xl text-xs font-semibold tracking-wide transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              >
+                <span>Add to active work</span>
+                <span>&gt;</span>
+              </button>
+            </div>
+          ) : (
+            // ================== หน้า 2: ฟอร์มระบุข้อมูลก่อนยืม ==================
+            <form onSubmit={handleSubmitBorrow} className="space-y-4">
+              <div>
+                <span className="text-[10px] font-bold uppercase text-emerald-600">
+                  Confirm Borrowing
+                </span>
+                <h3 className="text-lg font-bold text-gray-900">ระบุรายละเอียดการยืม</h3>
+              </div>
+
+              {errorMsg && (
+                <div className="p-2.5 bg-red-50 text-red-600 text-xs rounded-xl border border-red-200">
+                  {errorMsg}
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                    โปรเจกต์ / รายวิชา
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={project}
+                    onChange={(e) => setProject(e.target.value)}
+                    placeholder="เช่น โครงงานหุ่นยนต์, IoT Lab"
+                    className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-black"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                      จำนวนที่ยืม
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max={available}
+                      value={quantity}
+                      onChange={(e) => setQuantity(e.target.value)}
+                      className="w-full bg-gray-50 border border-gray-200 px-3 py-2 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-black"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                      กำหนดวันที่คืน
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      value={expectedReturnDate}
+                      onChange={(e) => setExpectedReturnDate(e.target.value)}
+                      className="w-full bg-gray-50 border border-gray-200 px-2.5 py-2 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-black"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                    วัตถุประสงค์
+                  </label>
+                  <textarea
+                    rows="2"
+                    value={purpose}
+                    onChange={(e) => setPurpose(e.target.value)}
+                    placeholder="เหตุผลการยืมคร่าวๆ"
+                    className="w-full bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-black resize-none"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="w-1/3 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer"
+                >
+                  ย้อนกลับ
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-2/3 bg-black hover:bg-gray-800 text-white py-2.5 rounded-xl text-xs font-semibold transition disabled:opacity-50 cursor-pointer"
+                >
+                  {loading ? 'กำลังบันทึก...' : 'ยืนยันคำขอยืม'}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+
+      </div>
+    </div>
+  );
+}

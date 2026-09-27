@@ -1,97 +1,134 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import 'dotenv/config'; // โหลดตัวแปรจากไฟล์ .env
-import db from '../db/conn.mjs'; // นำเข้า db จากไฟล์ conn.mjs
+import 'dotenv/config';
+import db from '../db/conn.mjs';
+import { ObjectId } from 'mongodb';
 
-// ใช้คำสั่ง export const ตรงนี้แทน module.exports ด้านล่าง
+// ฟังก์ชัน Login
 export const login = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { studentId, password } = req.body;
 
-        // ตรวจสอบว่าส่งข้อมูลมาครบหรือไม่
-        if (!email || !password) {
-            return res.status(400).json({ message: 'กรุณากรอกอีเมลและรหัสผ่านให้ครบถ้วน' });
+        if (!studentId || !password) {
+            return res.status(400).json({ message: 'กรุณากรอกรหัสประจำตัวและรหัสผ่าน' });
         }
 
-        // 1. เลือก Collection 'users' (ใช้ตัวแปร db ที่ import มาได้เลย)
         const usersCollection = db.collection('users');
+        const user = await usersCollection.findOne({ studentOrStaffId: studentId.trim() });
 
-        // 2. ค้นหาผู้ใช้จาก Email
-        const user = await usersCollection.findOne({ email: email });
-        
         if (!user) {
-            return res.status(401).json({ message: 'อีเมล หรือ รหัสผ่านไม่ถูกต้อง' });
+            return res.status(401).json({ message: 'รหัสประจำตัว หรือ รหัสผ่านไม่ถูกต้อง' });
         }
 
-        // 3. เปรียบเทียบรหัสผ่าน (ที่ผู้ใช้พิมพ์มา) กับรหัสผ่านที่เข้ารหัสไว้ใน Database
         const isPasswordMatch = await bcrypt.compare(password, user.password);
-        
         if (!isPasswordMatch) {
-            return res.status(401).json({ message: 'อีเมล หรือ รหัสผ่านไม่ถูกต้อง' });
+            return res.status(401).json({ message: 'รหัสประจำตัว หรือ รหัสผ่านไม่ถูกต้อง' });
         }
 
-        // 4. สร้าง JWT Token 
         const payload = {
             userId: user._id,
-            role: user.role, // สิทธิ์: Admin, อาจารย์, หรือ นักศึกษา
+            role: user.role,
             name: user.name,
             studentOrStaffId: user.studentOrStaffId
         };
 
         const secretKey = process.env.JWT_SECRET || 'your_secret_key_here';
-        const token = jwt.sign(payload, secretKey, { expiresIn: '1d' }); // Token หมดอายุใน 1 วัน
+        const token = jwt.sign(payload, secretKey, { expiresIn: '1d' });
 
-        // 5. ส่ง Response กลับไปยังหน้าเว็บ
         res.status(200).json({
             message: 'เข้าสู่ระบบสำเร็จ',
-            token: token,
+            token,
             user: {
                 id: user._id,
                 name: user.name,
-                email: user.email,
-                role: user.role
+                role: user.role,
+                studentOrStaffId: user.studentOrStaffId
             }
         });
-
     } catch (error) {
         console.error('Login Error:', error);
         res.status(500).json({ message: 'เกิดข้อผิดพลาดที่เซิร์ฟเวอร์' });
     }
 };
 
-// ฟังก์ชันสำหรับสร้างผู้ใช้ใหม่ (เพื่อใช้ทดสอบ)
+// ฟังก์ชัน Register (บังคับกรอกรหัสนักศึกษา/บุคลากรจริง)
 export const register = async (req, res) => {
     try {
-        const { email, password, name, role } = req.body;
-        
-        if (!email || !password) {
-            return res.status(400).json({ message: 'กรุณากรอกข้อมูลให้ครบถ้วน' });
+        const { password, name, role, department, phone } = req.body;
+        const studentOrStaffId = (req.body.studentOrStaffId || req.body.studentId || req.body.staffstudentId || '').trim();
+
+        // 1. ตรวจสอบฟิลด์สำคัญ (ตัด email ออกแล้ว)
+        if (!password || !name || !studentOrStaffId) {
+            return res.status(400).json({ 
+                message: 'กรุณากรอกข้อมูลให้ครบถ้วน: ชื่อ, รหัสนักศึกษา/บุคลากร และรหัสผ่าน' 
+            });
         }
 
         const usersCollection = db.collection('users');
-        
-        // เช็คว่ามีอีเมลนี้หรือยัง
-        const existingUser = await usersCollection.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ message: 'อีเมลนี้ถูกใช้งานแล้ว' });
+
+        // 2. เช็คว่ารหัสนักศึกษา/บุคลากรนี้มีในระบบหรือยัง (ใช้เป็นตัวระบุตัวตนหลัก ห้ามซ้ำ)
+        const existingStudentId = await usersCollection.findOne({ studentOrStaffId });
+        if (existingStudentId) {
+            return res.status(400).json({ message: 'รหัสนักศึกษา/บุคลากรนี้มีในระบบแล้ว' });
         }
 
-        // เข้ารหัสผ่านก่อนบันทึกลง Database
+        // 3. แฮชรหัสผ่าน
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // 4. บันทึกข้อมูลลง Database
         const newUser = {
-            email,
+            studentOrStaffId: studentOrStaffId,
+            name: name.trim(),
+            department: department || '',
+            phone: phone || '',
             password: hashedPassword,
-            name: name || "User Test",
-            role: role || "นักศึกษา",
-            studentOrStaffId: "STD" + Math.floor(Math.random() * 10000)
+            role: role || 'นักศึกษา',
+            createdAt: new Date()
         };
 
         const result = await usersCollection.insertOne(newUser);
-        res.status(201).json({ message: 'สร้างผู้ใช้สำเร็จ', userId: result.insertedId });
+        res.status(201).json({ 
+            message: 'ลงทะเบียนสำเร็จเรียบร้อย', 
+            userId: result.insertedId 
+        });
 
     } catch (error) {
         console.error('Register Error:', error);
-        res.status(500).json({ message: 'เกิดข้อผิดพลาด' });
+        res.status(500).json({ message: 'เกิดข้อผิดพลาดในการลงทะเบียน' });
     }
 };
+
+
+export const me = async (req, res) => {
+    try {
+        const userCollection = db.collection('users')
+        const user = await userCollection.findOne(
+            {
+                _id :  new ObjectId(req.user.userId)
+            },
+            {
+                projection : {password : 0}
+            }
+        )
+
+        if (!user) {
+            return res.status(404).json({message : "Not found"})
+        }
+
+        res.status(200).json(
+            {
+                user : { 
+                    id : user._id,
+                    name: user.name,
+                    studentOrStaffId: user.studentOrStaffId,
+                    department: user.department,
+                    phone: user.phone,
+                    role: user.role
+                }
+            }
+        )
+    } catch (error) {
+        console.error('Register Error:', error);
+        res.status(500).json({ message: 'เกิดข้อผิดพลาดในการดึงข้อมูล' });
+    }
+}

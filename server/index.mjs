@@ -14,6 +14,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
 
 // 2. กำหนด Base Path ให้กับแต่ละกลุ่ม API (เปิดใช้งาน authRoutes กลับมา)
 app.use('/uploads', express.static('uploads'));

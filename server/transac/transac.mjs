@@ -50,8 +50,8 @@ export const getAllTransactions = async (req, res) => {
 
 export const updateTransactionStatus = async (req, res) => {
     try {
-        const { id } = req.params; // รับ ID ของรายการยืมจาก URL
-        const { status } = req.body; // รับสถานะที่จะเปลี่ยน (เช่น 'อนุมัติ', 'ไม่อนุมัติ')
+        const { id } = req.params;
+        const { status } = req.body;
 
         if (!status) {
             return res.status(400).json({ message: 'กรุณาระบุสถานะ' });
@@ -60,42 +60,68 @@ export const updateTransactionStatus = async (req, res) => {
         const transactionCollection = db.collection('transactions');
         const equipmentCollection = db.collection('equipments');
 
-        // 1. ค้นหารายการยืมจาก Database
+        // 1. ค้นหารายการคำขอ
         const transaction = await transactionCollection.findOne({ _id: new ObjectId(id) });
         if (!transaction) {
             return res.status(404).json({ message: 'ไม่พบรายการคำขอยืมนี้' });
         }
 
-        // ป้องกันการกดอนุมัติซ้ำซ้อน (ถ้าไม่ใช่ 'รออนุมัติ' แปลว่าทำไปแล้ว)
-        if (transaction.status !== 'รออนุมัติ') {
-            return res.status(400).json({ message: 'รายการนี้ถูกดำเนินการไปแล้ว' });
+        // 2. ตรวจสอบการทำซ้ำ: ถ้าสถานะเดิมตรงกับสถานะใหม่อยู่แล้ว ไม่ต้องทำซ้ำ
+        if (transaction.status === status) {
+            return res.status(400).json({ message: `รายการนี้มีสถานะเป็น ${status} อยู่แล้ว` });
         }
 
-        // 2. ถ้า Admin กด "อนุมัติ" ให้ไปตัด Stock อุปกรณ์ (ลดจำนวน availableQuantity)
-        if (status === 'อนุมัติ') {
-            for (let item of transaction.items) {
-                await equipmentCollection.updateOne(
-                    { _id: new ObjectId(item.equipmentId) },
-                    // $inc คือการเพิ่ม/ลดค่าตัวเลข ในที่นี้ใส่ค่าลบ (-) เพื่อลดจำนวน
-                    { $inc: { availableQuantity: -Number(item.quantity) } } 
-                );
+        // 3. กรณี Admin "อนุมัติ" (ตัดสต็อกอุปกรณ์)
+        if (status === 'อนุมัติแล้ว' || status === 'อนุมัติ') {
+            if (transaction.status !== 'รออนุมัติ') {
+                return res.status(400).json({ message: 'สามารถอนุมัติได้เฉพาะรายการที่รออนุมัติเท่านั้น' });
+            }
+            
+            if (Array.isArray(transaction.items)) {
+                for (let item of transaction.items) {
+                    console.log(transaction.item )
+                    await equipmentCollection.updateOne(
+                        { _id: new ObjectId(item.equipmentId) },
+                        { $inc: { availableQuantity: -Number(item.quantity) } }
+                    );
+                }
             }
         }
 
-        // 3. อัปเดตสถานะของรายการยืมนั้นๆ
+        // 4. กรณีบันทึก "คืนแล้ว" (บวกสต็อกอุปกรณ์กลับคืน)
+        if (status === 'คืนแล้ว') {
+            if (Array.isArray(transaction.items)) {
+                for (let item of transaction.items) {
+                    await equipmentCollection.updateOne(
+                        { _id: new ObjectId(item.equipmentId) },
+                        { $inc: { availableQuantity: Number(item.quantity) } }
+                    );
+                }
+            }
+        }
+
+        // 5. บันทึกสถานะใหม่ลงฐานข้อมูล
+        const updateFields = {
+            status: status,
+            updatedAt: new Date()
+        };
+
+        if (status === 'คืนแล้ว') {
+            updateFields.actualReturnDate = new Date();
+        }
+
         await transactionCollection.updateOne(
             { _id: new ObjectId(id) },
-            { $set: { status: status, updatedAt: new Date() } }
+            { $set: updateFields }
         );
 
-        res.status(200).json({ message: `เปลี่ยนสถานะเป็น ${status} สำเร็จ` });
+        return res.status(200).json({ message: `เปลี่ยนสถานะเป็น ${status} สำเร็จ` });
 
     } catch (error) {
         console.error('Update Status Error:', error);
-        res.status(500).json({ message: 'เกิดข้อผิดพลาดในการอัปเดตสถานะ' });
+        return res.status(500).json({ message: 'เกิดข้อผิดพลาดในการอัปเดตสถานะ' });
     }
 };
-
 // ฟังก์ชันสำหรับ Admin: รับคืนอุปกรณ์และบวก Stock กลับเข้าคลัง
 export const returnEquipment = async (req, res) => {
     try {
