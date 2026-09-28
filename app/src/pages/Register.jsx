@@ -1,6 +1,94 @@
 import React, { useState } from 'react';
 import API from '../axios';
 import { useNavigate, Link } from 'react-router-dom';
+import picLogo from '/icon.png';
+
+// ข้อมูล 11 คณะและทุกสาขาวิชาตามหลักสูตรระดับปริญญาตรี สถาบันการจัดการปัญญาภิวัฒน์ (PIM)
+const PIM_FACULTIES = [
+  {
+    faculty: 'คณะบริหารธุรกิจ (BA)',
+    majors: [
+      'สาขาวิชาการจัดการธุรกิจการค้าสมัยใหม่ (MTM)',
+      'สาขาวิชาการจัดการธุรกิจการค้าสมัยใหม่ ต่อเนื่อง (CMTM)',
+      'สาขาวิชาการจัดการธุรกิจการค้าสมัยใหม่ เรียนออนไลน์ (IMM)',
+      'สาขาวิชาการจัดการธุรกิจการค้าสมัยใหม่ ต่อเนื่อง/ออนไลน์ (CIMM)'
+    ]
+  },
+  {
+    faculty: 'คณะวิศวกรรมศาสตร์และเทคโนโลยี (ET)',
+    majors: [
+      'สาขาวิชาวิศวกรรมคอมพิวเตอร์และปัญญาประดิษฐ์ (CPE)',
+      'สาขาวิชาเทคโนโลยีดิจิทัลและสารสนเทศ (DIT)',
+      'สาขาวิชาเทคโนโลยีดิจิทัลและสารสนเทศ : Cybersecurity ต่อเนื่อง',
+      'สาขาวิชาวิศวกรรมหุ่นยนต์และระบบอัตโนมัติ (RAE)',
+      'สาขาวิชาวิศวกรรมการผลิตยานยนต์ (AME)',
+      'สาขาวิชาวิศวกรรมอุตสาหการและการจัดการ / การผลิตอัจฉริยะ (IEM)'
+    ]
+  },
+  {
+    faculty: 'คณะการจัดการธุรกิจอาหาร (FBM)',
+    majors: [
+      'สาขาวิชาการจัดการธุรกิจอาหาร',
+      'สาขาวิชาการจัดการธุรกิจค้าส่งอาหารสมัยใหม่',
+      'สาขาวิชาศิลปะการประกอบอาหารและการจัดการร้านอาหาร (Chef)'
+    ]
+  },
+  {
+    faculty: 'คณะการจัดการธุรกิจบริการ โรงแรม และการบิน (HAM)',
+    majors: [
+      'สาขาวิชาการจัดการธุรกิจการบิน (AVI)',
+      'สาขาวิชาอุตสาหกรรมการบริการและการท่องเที่ยว (HTM)'
+    ]
+  },
+  {
+    faculty: 'คณะวิทยาศาสตร์ เทคโนโลยีและการจัดการอาหาร (STM)',
+    majors: [
+      'สาขาวิชาการจัดการเทคโนโลยีแปรรูปอาหาร'
+    ]
+  },
+  {
+    faculty: 'คณะการจัดการโลจิสติกส์และการคมนาคมขนส่ง (LTM)',
+    majors: [
+      'สาขาวิชาการจัดการโลจิสติกส์และการคมนาคมขนส่ง'
+    ]
+  },
+  {
+    faculty: 'คณะศิลปศาสตร์ (LA)',
+    majors: [
+      'สาขาวิชาภาษาจีนธุรกิจ (BC)',
+      'สาขาวิชาภาษาญี่ปุ่นธุรกิจ (BJ)',
+      'สาขาวิชาภาษาอังกฤษเพื่อการสื่อสารทางธุรกิจ (CEB)'
+    ]
+  },
+  {
+    faculty: 'คณะครุศาสตร์ (EDU)',
+    majors: [
+      'สาขาวิชาการสอนภาษาจีน',
+      'สาขาวิชาการสอนภาษาอังกฤษ'
+    ]
+  },
+  {
+    faculty: 'คณะนิเทศศาสตร์ (CA)',
+    majors: [
+      'วิชาเอกสาขาการสื่อสารดิจิทัลเพื่อองค์กรและแบรนด์',
+      'วิชาเอกสาขาวารสารศาสตร์คอนเวอร์เจนท์และสื่อดิจิทัล'
+    ]
+  },
+  {
+    faculty: 'คณะเกษตรนวัตและการจัดการ (IAM)',
+    majors: [
+      'สาขาวิชานวัตกรรมการจัดการเกษตร'
+    ]
+  },
+  {
+    faculty: 'คณะพยาบาลศาสตร์ (NS)',
+    majors: [
+      'หลักสูตรพยาบาลศาสตรบัณฑิต (หลักสูตรทางวิชาชีพ 4 ปี)',
+      'หลักสูตรพยาบาลศาสตรบัณฑิต (หลักสูตรทางวิชาชีพ 2.5 ปี สำหรับผู้จบ ป.ตรี สาขาอื่น)'
+    ]
+  }
+];
+
 export default function Register() {
   const [formData, setFormData] = useState({
     studentId: '',
@@ -13,22 +101,38 @@ export default function Register() {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate()
-  
+  const navigate = useNavigate();
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
+
+    if (!formData.department) {
+      setErrorMsg('กรุณาเลือกคณะและสาขาวิชาของคุณ');
+      return;
+    }
+
+    if (!/^\d{10}$/.test(formData.studentId.trim())) {
+      setErrorMsg('กรุณากรอกรหัสนักศึกษาเป็นตัวเลข 10 หลักให้ถูกต้อง');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await API.post('/auth/register', formData);
-      setSuccessMsg('ลงทะเบียนสำเร็จแล้ว! กำลังพากลับไปหน้าเข้าสู่ระบบ...');
-      setTimeout(() => navigate('/login'), 1500); // แก้เป็นใช้ navigate โดยตรง
+      await API.post('/auth/register', {
+        ...formData,
+        studentId: formData.studentId.trim(),
+        role: 'นักศึกษา'
+      });
+      setSuccessMsg('ลงทะเบียนนักศึกษาสำเร็จ! กำลังพากลับไปหน้าเข้าสู่ระบบ...');
+      setTimeout(() => navigate('/login'), 1500);
     } catch (err) {
       setErrorMsg(err.response?.data?.message || 'ลงทะเบียนไม่สำเร็จ โปรดตรวจสอบข้อมูล');
     } finally {
@@ -38,22 +142,24 @@ export default function Register() {
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] flex flex-col items-center justify-center p-4">
-      
-      {/* โลโก้ใหญ่แบบสวยๆ วางเหนือกล่อง Register */}
-        <div className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <img 
-            src="/icon.png"
-            alt="logo" 
-            className="h-20 sm:h-28 object-contain drop-shadow-xl hover:scale-105 transition-transform duration-300" 
-          />
-        </div>
+      {/* โลโก้ */}
+      <div className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <img
+          src={picLogo}
+          alt="logo"
+          className="h-20 sm:h-28 object-contain drop-shadow-xl hover:scale-105 transition-transform duration-300"
+        />
+      </div>
 
-      <div className="bg-white w-full max-w-lg p-8 rounded-3xl border border-gray-100 shadow-xl shadow-gray-200/50 relative z-10 animate-in fade-in zoom-in-95 duration-500">
+      <div className="bg-white w-full max-w-xl p-8 rounded-3xl border border-gray-100 shadow-xl shadow-gray-200/50 relative z-10 animate-in fade-in zoom-in-95 duration-500">
         <div className="mb-6 text-center">
           <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">
-            Equipment Borrow System
+            Student Registration
           </span>
-          <h2 className="text-2xl font-extrabold text-gray-900 mt-1">สมัครสมาชิก</h2>
+          <h2 className="text-2xl font-extrabold text-gray-900 mt-1">สมัครสมาชิกนักศึกษา</h2>
+          <p className="text-xs text-gray-400 mt-1">
+            สถาบันการจัดการปัญญาภิวัฒน์ (PIM)
+          </p>
         </div>
 
         {errorMsg && (
@@ -68,21 +174,26 @@ export default function Register() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-3.5">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1 ml-1">รหัสประจำตัว</label>
+              <label className="block text-xs font-semibold text-gray-600 mb-1 ml-1">
+                รหัสนักศึกษา (10 หลัก)
+              </label>
               <input
                 type="text"
                 name="studentId"
                 required
+                maxLength="10"
                 value={formData.studentId}
                 onChange={handleChange}
-                placeholder="6501xxxx"
+                placeholder="684001xxxx"
                 className="w-full bg-gray-50 border border-gray-200 px-3.5 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1 ml-1">ชื่อ - นามสกุล</label>
+              <label className="block text-xs font-semibold text-gray-600 mb-1 ml-1">
+                ชื่อ - นามสกุล
+              </label>
               <input
                 type="text"
                 name="name"
@@ -95,58 +206,61 @@ export default function Register() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1 ml-1">
+              คณะ / สาขาวิชา
+            </label>
+            <select
+              name="department"
+              required
+              value={formData.department}
+              onChange={handleChange}
+              className="w-full bg-gray-50 border border-gray-200 px-3.5 py-2.5 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-black cursor-pointer truncate"
+            >
+              <option value="" disabled>-- เลือกคณะและสาขาวิชา --</option>
+              {PIM_FACULTIES.map((group, gIdx) => (
+                <optgroup key={gIdx} label={`🏢 ${group.faculty}`}>
+                  {group.majors.map((major, mIdx) => (
+                    <option key={mIdx} value={`${group.faculty} - ${major}`}>
+                      {major}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1 ml-1">สาขา / สังกัด</label>
-              <input
-                type="text"
-                name="department"
-                required
-                value={formData.department}
-                onChange={handleChange}
-                placeholder="วิศวกรรมคอมพิวเตอร์"
-                className="w-full bg-gray-50 border border-gray-200 px-3.5 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1 ml-1">เบอร์โทรศัพท์</label>
+              <label className="block text-xs font-semibold text-gray-600 mb-1 ml-1">
+                เบอร์โทรศัพท์
+              </label>
               <input
                 type="tel"
                 name="phone"
                 required
+                maxLength="10"
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="081xxxxxxx"
                 className="w-full bg-gray-50 border border-gray-200 px-3.5 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black"
               />
             </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1 ml-1">รหัสผ่าน (Password)</label>
-            <input
-              type="password"
-              name="password"
-              required
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="••••••••"
-              className="w-full bg-gray-50 border border-gray-200 px-3.5 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1 ml-1">บทบาท (Role)</label>
-            <select
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              className="w-full bg-gray-50 border border-gray-200 px-3.5 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black cursor-pointer"
-            >
-              <option value="นักศึกษา">นักศึกษา</option>
-              <option value="อาจารย์">อาจารย์</option>
-              <option value="admin">Admin</option>
-            </select>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1 ml-1">
+                รหัสผ่าน (Password)
+              </label>
+              <input
+                type="password"
+                name="password"
+                required
+                minLength="6"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                className="w-full bg-gray-50 border border-gray-200 px-3.5 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black"
+              />
+            </div>
           </div>
 
           <button
@@ -154,7 +268,7 @@ export default function Register() {
             disabled={loading}
             className="w-full bg-black text-white py-3.5 rounded-xl font-bold text-sm hover:bg-gray-800 transition disabled:opacity-50 mt-4 cursor-pointer shadow-md"
           >
-            {loading ? 'กำลังบันทึกข้อมูล...' : 'ลงทะเบียนบัญชีใหม่'}
+            {loading ? 'กำลังบันทึกข้อมูล...' : 'ลงทะเบียนบัญชีนักศึกษา'}
           </button>
         </form>
 
