@@ -1,5 +1,5 @@
 
-import { Bell } from 'lucide-react';
+import { Bell ,User } from 'lucide-react';
 import { useEffect , useState} from 'react';
 import API from '../axios'
 
@@ -29,9 +29,9 @@ export default function Navbar() {
     <header className="h-16 bg-[#00C853] text-white flex items-center justify-between px-8 shadow-sm">
       <div className="font-medium tracking-wide">P.I.M Equipment borrow system</div>
       <div className="flex items-center gap-4">
-        <button className="p-2 hover:bg-green-600 rounded-full transition"><Bell size={20} /></button>
+
         <div className="flex items-center gap-3 bg-green-700 px-3 py-1.5 rounded-full">
-          <div className="w-7 h-7 bg-white text-green-700 font-bold rounded-full flex items-center justify-center text-xs">T</div>
+          <User />
           <div className="text-xs">
             <p className="font-bold">{name}</p>
             <p className="text-[10px] text-green-200">{usrId}</p>

@@ -65,14 +65,7 @@ export default function Sidebar() {
       </div>
 
       <div className="space-y-4">
-        <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden">
-          {/* เพิ่มลูกเล่นกราฟิกมุมกล่องเล็กน้อย */}
-          <div className="absolute -right-4 -top-4 w-12 h-12 bg-emerald-50 rounded-full blur-xl"></div>
-          <div className="flex items-center gap-1.5 text-[11px] font-extrabold text-emerald-600 mb-1.5 uppercase tracking-wide">
-            ✨ One clear place.
-          </div>
-          <p className="text-xs text-gray-500 font-medium">Keep your next move visible.</p>
-        </div>
+        
         
         <NavLink
           to="/login"
