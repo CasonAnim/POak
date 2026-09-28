@@ -19,6 +19,6 @@ router.put('/:id', verifyToken, verifyAdmin, updateEquipment);
 router.delete('/:id', verifyToken, verifyAdmin, deleteEquipment);
 
 // POST: แจ้งอุปกรณ์เสีย/สูญหาย
-router.post('/:id/issue', verifyToken, verifyAdmin, reportIssue);
+router.post('/:id/issue', verifyToken, reportIssue);
 
 export default router;

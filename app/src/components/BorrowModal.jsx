@@ -3,7 +3,6 @@ import { X, Calendar, FolderGit2, CheckCircle2 } from 'lucide-react';
 import API from '../axios';
 
 export default function BorrowModal({ item, onClose, onSuccess }) {
-  // สเต็ป 1 = ดูรายละเอียดตามรูป UI, สเต็ป 2 = กรอกฟอร์มยืม
   const [step, setStep] = useState(1);
   const [project, setProject] = useState('');
   const [purpose, setPurpose] = useState('');
@@ -13,24 +12,23 @@ export default function BorrowModal({ item, onClose, onSuccess }) {
   const [errorMsg, setErrorMsg] = useState('');
   const [imgError, setImgError] = useState(false);
 
+  // เช็คประเภทว่าเป็นวัสดุสิ้นเปลืองหรือไม่[cite: 2]
+  const isConsumable = item?.type === 'วัสดุสิ้นเปลือง' || item?.category === 'วัสดุสิ้นเปลือง';
+
   const available = Number(item.availableQuantity) || 0;
   const isAvailable = available > 0;
 
-  // ฟังก์ชันแปลง path รูปภาพให้ดึงจาก backend uploads
   const getImageUrl = (img) => {
     if (!img) return null;
-    // ถ้าเป็น Full URL (http:// หรือ https://) หรือ data:image ให้ใช้ค่านั้นตรงๆ
     if (img.startsWith('http://') || img.startsWith('https://') || img.startsWith('data:')) {
       return img;
     }
-    // ดึง base URL ของเซิร์ฟเวอร์ (ปรับพอร์ตให้ตรงกับ Backend ของคุณ เช่น http://localhost:5000)
     const backendBaseUrl = (API.defaults.baseURL || 'http://localhost:5000').replace(/\/api\/?$/, '');
     return `${backendBaseUrl}/uploads/${img}`;
   };
 
   const imageSrc = getImageUrl(item.image);
 
-  // ส่งคำขอยืมไปที่ Backend
   const handleSubmitBorrow = async (e) => {
     e.preventDefault();
     setErrorMsg('');
@@ -40,7 +38,10 @@ export default function BorrowModal({ item, onClose, onSuccess }) {
       const payload = {
         project,
         purpose,
-        expectedReturnDate,
+        // ถ้าเป็นวัสดุสิ้นเปลือง ไม่ต้องมี deadline คืน ให้ใช้วันนี้เป็น default
+        expectedReturnDate: isConsumable 
+          ? new Date().toISOString().split('T')[0] 
+          : expectedReturnDate,
         items: [
           {
             equipmentId: item._id,
@@ -52,7 +53,7 @@ export default function BorrowModal({ item, onClose, onSuccess }) {
       await API.post('/transactions/request', payload);
       onSuccess();
     } catch (err) {
-      setErrorMsg(err.response?.data?.message || 'ส่งคำขอยืมไม่สำเร็จ');
+      setErrorMsg(err.response?.data?.message || 'ส่งคำขอไม่สำเร็จ');
     } finally {
       setLoading(false);
     }
@@ -60,10 +61,9 @@ export default function BorrowModal({ item, onClose, onSuccess }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-      {/* Container หลัก: แบ่งฝั่งซ้าย-ขวาตามดีไซน์ */}
       <div className="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl relative flex flex-col md:flex-row border border-gray-100">
         
-        {/* ปุ่มกากบาทปิด Modal (มุมขวาบน) */}
+        {/* ปุ่มปิด */}
         <button
           onClick={onClose}
           className="absolute right-4 top-4 z-20 text-gray-400 hover:text-black p-1 transition cursor-pointer"
@@ -71,14 +71,12 @@ export default function BorrowModal({ item, onClose, onSuccess }) {
           <X size={18} />
         </button>
 
-        {/* --- ฝั่งซ้าย: พื้นหลังดำ + โชว์ item id และ item pic --- */}
+        {/* ฝั่งซ้าย */}
         <div className="w-full md:w-5/12 bg-black text-white p-8 flex flex-col justify-between items-center relative min-h-[260px] md:min-h-[380px]">
-          {/* item id */}
           <span className="self-end text-[10px] font-mono text-gray-400 tracking-wider">
             {item.equipCode || item.code || 'EQ-001'}
           </span>
 
-          {/* item pic ในวงกลม รองรับรูปจาก Multer */}
           <div className="w-36 h-36 rounded-full bg-[#111111] border border-gray-800 flex items-center justify-center overflow-hidden my-auto p-2">
             {imageSrc && !imgError ? (
               <img
@@ -88,7 +86,7 @@ export default function BorrowModal({ item, onClose, onSuccess }) {
                 className="w-full h-full object-contain"
               />
             ) : (
-              <span className="text-4xl">🔬</span>
+              <span className="text-4xl">{isConsumable ? '📦' : '🔬'}</span>
             )}
           </div>
 
@@ -97,23 +95,34 @@ export default function BorrowModal({ item, onClose, onSuccess }) {
           </div>
         </div>
 
-        {/* --- ฝั่งขวา: พื้นหลังขาว + รายละเอียด --- */}
+        {/* ฝั่งขวา */}
         <div className="w-full md:w-7/12 p-8 flex flex-col justify-between bg-white">
           {step === 1 ? (
-            // ================== หน้า 1: แสดงตามภาพ Pop-up ==================
             <div className="space-y-6">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                  {item.type || item.category || 'LAB EQUIPMENT'}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                    {item.equipCode || item.code || 'ITEM'}
+                  </span>
+                  {/* Badge ประเภทอุปกรณ์ */}
+                  {isConsumable ? (
+                    <span className="text-[10px] bg-purple-50 text-purple-600 border border-purple-200 px-2 py-0.5 rounded-full font-semibold">
+                      วัสดุสิ้นเปลือง (เบิกใช้)
+                    </span>
+                  ) : (
+                    <span className="text-[10px] bg-blue-50 text-blue-600 border border-blue-200 px-2 py-0.5 rounded-full font-semibold">
+                      ครุภัณฑ์ (ต้องคืน)
+                    </span>
+                  )}
+                </div>
+
                 <h2 className="text-2xl font-bold text-gray-900 mt-1">
                   {item.name}
                 </h2>
                 <p className="text-xs text-gray-500 mt-2 leading-relaxed">
-                  {item.details || item.description || 'Bench-ready meter for quick readings across liquid samples.'}
+                  {item.details || item.description || 'ไม่มีรายละเอียดเพิ่มเติม'}
                 </p>
 
-                {/* status badge */}
                 <div className="mt-3">
                   {isAvailable ? (
                     <span className="inline-block bg-black text-white text-[10px] font-medium px-3 py-0.5 rounded-full">
@@ -127,40 +136,39 @@ export default function BorrowModal({ item, onClose, onSuccess }) {
                 </div>
               </div>
 
-              {/* ข้อมูล Storage & Status */}
               <div className="space-y-2 border-t border-gray-100 pt-4 text-xs">
                 <div className="flex justify-between text-gray-500">
                   <span>Last checked</span>
                   <span className="text-gray-900 font-medium">
-                    {item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : '12 Mar 2026'}
+                    {item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : '-'}
                   </span>
                 </div>
                 <div className="flex justify-between text-gray-500">
                   <span>Storage</span>
                   <span className="text-gray-900 font-medium">
-                    {item.storageLocation || 'North bench - Bay 02'}
+                    {item.storageLocation || 'คลังอุปกรณ์กลาง'}
                   </span>
                 </div>
               </div>
 
-              {/* ปุ่ม Add to active work > ตามรูป */}
               <button
                 onClick={() => setStep(2)}
                 disabled={!isAvailable}
                 className="w-full bg-black hover:bg-gray-800 text-white py-3 rounded-xl text-xs font-semibold tracking-wide transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
-                <span>Add to active work</span>
+                <span>{isConsumable ? 'ทำรายการขอเบิกใช้' : 'Add to active work'}</span>
                 <span>&gt;</span>
               </button>
             </div>
           ) : (
-            // ================== หน้า 2: ฟอร์มระบุข้อมูลก่อนยืม ==================
             <form onSubmit={handleSubmitBorrow} className="space-y-4">
               <div>
                 <span className="text-[10px] font-bold uppercase text-emerald-600">
-                  Confirm Borrowing
+                  {isConsumable ? 'Confirm Requisition' : 'Confirm Borrowing'}
                 </span>
-                <h3 className="text-lg font-bold text-gray-900">ระบุรายละเอียดการยืม</h3>
+                <h3 className="text-lg font-bold text-gray-900">
+                  {isConsumable ? 'ระบุรายละเอียดการเบิกใช้' : 'ระบุรายละเอียดการยืม'}
+                </h3>
               </div>
 
               {errorMsg && (
@@ -184,10 +192,10 @@ export default function BorrowModal({ item, onClose, onSuccess }) {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className={`grid ${isConsumable ? 'grid-cols-1' : 'grid-cols-2'} gap-2`}>
                   <div>
                     <label className="block text-[11px] font-semibold text-gray-600 mb-1">
-                      จำนวนที่ยืม
+                      จำนวนที่{isConsumable ? 'เบิก' : 'ยืม'}
                     </label>
                     <input
                       type="number"
@@ -199,18 +207,21 @@ export default function BorrowModal({ item, onClose, onSuccess }) {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-[11px] font-semibold text-gray-600 mb-1">
-                      กำหนดวันที่คืน
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      value={expectedReturnDate}
-                      onChange={(e) => setExpectedReturnDate(e.target.value)}
-                      className="w-full bg-gray-50 border border-gray-200 px-2.5 py-2 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-black"
-                    />
-                  </div>
+                  {/* ซ่อนช่องวันกำหนดคืนถ้าเป็นวัสดุสิ้นเปลือง */}
+                  {!isConsumable && (
+                    <div>
+                      <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                        กำหนดวันที่คืน
+                      </label>
+                      <input
+                        type="date"
+                        required
+                        value={expectedReturnDate}
+                        onChange={(e) => setExpectedReturnDate(e.target.value)}
+                        className="w-full bg-gray-50 border border-gray-200 px-2.5 py-2 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-black"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -221,7 +232,7 @@ export default function BorrowModal({ item, onClose, onSuccess }) {
                     rows="2"
                     value={purpose}
                     onChange={(e) => setPurpose(e.target.value)}
-                    placeholder="เหตุผลการยืมคร่าวๆ"
+                    placeholder={isConsumable ? 'เหตุผลการเบิกใช้คร่าวๆ' : 'เหตุผลการยืมคร่าวๆ'}
                     className="w-full bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-black resize-none"
                   />
                 </div>
@@ -240,7 +251,11 @@ export default function BorrowModal({ item, onClose, onSuccess }) {
                   disabled={loading}
                   className="w-2/3 bg-black hover:bg-gray-800 text-white py-2.5 rounded-xl text-xs font-semibold transition disabled:opacity-50 cursor-pointer"
                 >
-                  {loading ? 'กำลังบันทึก...' : 'ยืนยันคำขอยืม'}
+                  {loading
+                    ? 'กำลังบันทึก...'
+                    : isConsumable
+                    ? 'ยืนยันการขอเบิก'
+                    : 'ยืนยันคำขอยืม'}
                 </button>
               </div>
             </form>

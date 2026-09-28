@@ -32,7 +32,7 @@ export const verifyToken = (req, res, next) => {
 // 2. ฟังก์ชันตรวจว่าเป็น Admin หรือไม่ (ต้องใช้คู่กับ verifyToken เสมอ)
 export const verifyAdmin = (req, res, next) => {
     // เช็ค role จากข้อมูลที่เราฝากไว้ใน req.user
-    if (req.user && req.user.role === 'Admin') {
+    if (req.user && req.user.role === 'admin') {
         next(); // เป็น Admin ผ่านได้!
     } else {
         return res.status(403).json({ message: 'สิทธิ์ถูกปฏิเสธ: เฉพาะ Admin เท่านั้น' });
