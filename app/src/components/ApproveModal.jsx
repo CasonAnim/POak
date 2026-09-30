@@ -68,7 +68,7 @@ export default function ApproveModal({ request, onClose, onUpdated }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl relative border border-gray-100 animate-in fade-in zoom-in-95 duration-150">
+      <div className="bg-white rounded-3xl max-w-lg w-full max-h-[92dvh] overflow-y-auto p-5 sm:p-6 shadow-2xl relative border border-gray-100 animate-in fade-in zoom-in-95 duration-150">
         {/* ปุ่มปิด Modal */}
         <button
           onClick={onClose}
@@ -81,10 +81,10 @@ export default function ApproveModal({ request, onClose, onUpdated }) {
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">
             {isConsumableOnly ? 'Requisition Details' : 'Transaction Details'}
           </span>
-          <h2 className="text-xl font-bold text-gray-900 mt-0.5">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900 mt-0.5 pr-6 break-words">
             {request.project || 'ไม่มีชื่อโปรเจกต์'}
           </h2>
-          <p className="text-xs text-gray-500 font-mono">ID: {request._id}</p>
+          <p className="text-xs text-gray-500 font-mono break-all">ID: {request._id}</p>
         </div>
 
         {errorMsg && (
@@ -94,28 +94,28 @@ export default function ApproveModal({ request, onClose, onUpdated }) {
         )}
 
         {/* ข้อมูลคำขอ */}
-        <div className="bg-gray-50 rounded-2xl p-4 space-y-3 mb-5 text-xs text-gray-700 border border-gray-100">
-          <div className="flex items-center justify-between">
+        <div className="bg-gray-50 rounded-2xl p-3 sm:p-4 space-y-3 mb-5 text-xs text-gray-700 border border-gray-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-3">
             <span className="text-gray-400 flex items-center gap-1.5">
               <User size={14} /> ผู้ขอ{hasConsumable ? 'เบิก/ยืม' : 'ยืม'}:
             </span>
-            <span className="font-semibold text-gray-900">
+            <span className="font-semibold text-gray-900 break-words sm:text-right">
               {request.userId?.name || request.userName} ({request.role || 'นักศึกษา'})
             </span>
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-3">
             <span className="text-gray-400 flex items-center gap-1.5">
               <BookOpen size={14} /> วัตถุประสงค์:
             </span>
-            <span className="font-medium text-gray-800">{request.purpose || '-'}</span>
+            <span className="font-medium text-gray-800 break-words sm:text-right">{request.purpose || '-'}</span>
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-3">
             <span className="text-gray-400 flex items-center gap-1.5">
               <Calendar size={14} /> วันที่ขอ - กำหนดคืน:
             </span>
-            <span className="font-medium text-gray-800">
+            <span className="font-medium text-gray-800 sm:text-right">
               {new Date(request.borrowDate || request.createdAt).toLocaleDateString('th-TH')} -{' '}
               {isConsumableOnly ? 'ไม่มีกำหนด (เบิกใช้)' : new Date(request.expectedReturnDate).toLocaleDateString('th-TH')}
             </span>
@@ -133,8 +133,8 @@ export default function ApproveModal({ request, onClose, onUpdated }) {
                   const isItemConsumable = eqType === 'วัสดุสิ้นเปลือง';
                   
                   return (
-                    <div key={idx} className="flex justify-between items-center bg-white px-2.5 py-1.5 rounded-lg border border-gray-100">
-                      <div className="flex items-center gap-2">
+                    <div key={idx} className="flex justify-between items-center gap-2 bg-white px-2.5 py-1.5 rounded-lg border border-gray-100">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className="font-medium text-gray-800">{item.equipmentId?.name || item.name || 'อุปกรณ์'}</span>
                         {/* แสดง Badge ชนิดของอุปกรณ์ใน Modal เลย */}
                         {isItemConsumable ? (
@@ -206,7 +206,7 @@ export default function ApproveModal({ request, onClose, onUpdated }) {
                 required
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col-reverse sm:flex-row gap-2">
               <button
                 type="button"
                 onClick={() => {
@@ -227,7 +227,7 @@ export default function ApproveModal({ request, onClose, onUpdated }) {
             </div>
           </form>
         ) : (
-          <div className="flex gap-2">
+          <div className="flex flex-col-reverse sm:flex-row gap-2">
             {request.status === 'รออนุมัติ' ? (
               <>
                 <button

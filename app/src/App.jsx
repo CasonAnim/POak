@@ -1,4 +1,4 @@
-
+import { useState } from 'react';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -13,14 +13,16 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { Routes , Route , Navigate,  Outlet } from 'react-router-dom';
   
 function AppLayout() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
-    <div className="flex h-screen bg-[#F8F9FA] text-[#1E1E1E] font-sans">
-      <Sidebar />
+    <div className="flex h-dvh bg-[#F8F9FA] text-[#1E1E1E] font-sans">
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         <header className="w-full shrink-0 z-10 sticky top-0 bg-white">
-          <Navbar />
+          <Navbar onMenuClick={() => setSidebarOpen(true)} />
         </header>
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden">
           {/* Outlet คือจุดที่หน้า Dashboard, Me, History, Item จะถูกเรนเดอร์ */}
           <Outlet />
         </main>

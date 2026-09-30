@@ -4,6 +4,8 @@ import LogFilterBar from '../components/LogFilterBar';
 import LogItem from '../components/LogItem';
 import AdminOnly from '../components/AdminOnly';
 import DescriptionModal from '../components/DescriptionModal'; // 1. นำเข้า Modal
+import Pagination from '../components/Pagination';
+import usePagination from '../components/usePagination';
 
 export default function History() {
     const [logs, setLogs] = useState([]);
@@ -79,13 +81,18 @@ export default function History() {
     return matchesSearch && matchesAction;
   });
 
+  // 10 logs per page; back to page 1 whenever search/filter changes
+  const { pagedItems, currentPage, totalPages, totalItems, pageSize, goToPage, listRef } =
+    usePagination(filteredLogs, 10, `${searchTerm}|${searchType}|${actionFilter}`);
+
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-xs">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+    <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 shadow-xs">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-4 sm:mb-6">
         <div>
           <p className="text-xs text-gray-400 uppercase font-semibold">Audit Trail</p>
-          <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+          <h3 className="text-base sm:text-xl font-bold text-gray-900 flex flex-wrap items-center gap-2">
             <AdminOnly>
               <span>System Activity Logs (ประวัติกิจกรรมระบบ)</span>
             </AdminOnly>
@@ -113,8 +120,8 @@ export default function History() {
       ) : filteredLogs.length === 0 ? (
         <div className="text-center py-10 text-xs text-gray-400">ไม่พบประวัติการทำรายการ</div>
       ) : (
-        <div className="space-y-3">
-          {filteredLogs.map((log) => (
+        <div ref={listRef} className="space-y-3 scroll-mt-4">
+          {pagedItems.map((log) => (
             // 3. แนบ onClick ให้เปิด Modal และส่งข้อมูล log นั้นๆ ไป
             <LogItem 
               key={log._id || log.id} 
@@ -122,6 +129,14 @@ export default function History() {
               onClick={() => setViewDetailLog(log)} 
             />
           ))}
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={goToPage}
+          />
         </div>
       )}
 
@@ -132,6 +147,7 @@ export default function History() {
           onClose={() => setViewDetailLog(null)} 
         />
       )}
+    </div>
     </div>
   );
 }
