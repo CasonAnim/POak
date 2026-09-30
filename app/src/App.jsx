@@ -4,7 +4,9 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
 import History from './pages/History';
-import Sidebar from './components/sidebar';
+import Sidebar from './components/Sidebar';
+import AdminOnly from './components/AdminOnly';
+import UserMgr from './pages/UserMgr';
 import Navbar from './components/Navbar';
 import ItemsToBorrow from './pages/ItemsToBorrowCason';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -46,6 +48,12 @@ export default function App() {
         <Route path="/me" element={<Profile />} />
         <Route path="/log" element={<History />} />
         <Route path="/item" element={<ItemsToBorrow />} />
+        <Route path="/users" element={
+          <AdminOnly>
+            <UserMgr />
+          </AdminOnly>
+        }
+/>
       </Route>
 
       {/* 3. จัดการเส้นทางที่เหลือ */}

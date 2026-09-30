@@ -8,7 +8,7 @@ import authRoutes from "./routes/authRoute.mjs";
 import equipmentRoutes from "./routes/equipmentRoute.mjs";
 import transactionRoutes from "./routes/transac.mjs";
 import dash from "./routes/dashRoute.mjs";
-
+import userRoutes from "./routes/userRoute.mjs"
 const PORT = process.env.PORT || 5050;
 const app = express();
 
@@ -22,7 +22,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/equipments', equipmentRoutes);       // ระบบจัดการอุปกรณ์และ Stock
 app.use('/api/transactions', transactionRoutes);   // ระบบยืม–คืน
 app.use('/api/dashboard', dash);
-
+app.use('/api/users', userRoutes);
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });

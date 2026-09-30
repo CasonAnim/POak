@@ -1,6 +1,6 @@
-import { LayoutDashboard, FileText, Calendar, Package, Settings, User, LogOut } from 'lucide-react';
+import { LayoutDashboard, FileText, Calendar, Package, ShieldCheck, User, LogOut } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
-
+import AdminOnly from './AdminOnly.jsx';
 
 export default function Sidebar() {
   return (
@@ -61,6 +61,18 @@ export default function Sidebar() {
           >
             <User size={18} /> Profile
           </NavLink>
+          <AdminOnly>
+            <NavLink
+              to="/users"
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3.5 py-3 rounded-xl font-semibold transition-all ${
+                  isActive ? 'bg-black text-white shadow-md' : 'text-gray-600 hover:bg-gray-200 hover:text-gray-900'
+                }`
+              }
+            >
+              <ShieldCheck size={18} /> จัดการผู้ใช้
+            </NavLink>
+          </AdminOnly>
         </nav>
       </div>
 
@@ -78,6 +90,8 @@ export default function Sidebar() {
         >
           <LogOut size={18} /> Log out
         </NavLink>
+
+        
       </div>
     </aside>
   );
