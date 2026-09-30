@@ -34,7 +34,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] flex flex-col items-center justify-center p-4">
+    <div className="min-h-dvh bg-[#F8F9FA] flex flex-col items-center justify-center p-4">
       
       {/* โลโก้ใหญ่แบบสวยๆ วางเหนือกล่อง Login */}
       <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -45,7 +45,7 @@ export default function Login() {
         />
       </div>
 
-      <div className="bg-white w-full max-w-md p-8 rounded-3xl border border-gray-100 shadow-xl shadow-gray-200/50 relative z-10 animate-in fade-in zoom-in-95 duration-500">
+      <div className="bg-white w-full max-w-md p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-xl shadow-gray-200/50 relative z-10 animate-in fade-in zoom-in-95 duration-500">
         <div className="mb-6 text-center">
           <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">
             Equipment Borrow System

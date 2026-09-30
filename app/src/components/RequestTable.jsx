@@ -61,19 +61,19 @@ export default function RequestTable({ requests = [], onRefresh }) {
   });
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-xs">
-      <div className="flex justify-between items-center mb-6">
+    <div className="bg-white border border-gray-200 rounded-2xl p-4 sm:p-6 shadow-xs">
+      <div className="flex justify-between items-center gap-3 mb-4 sm:mb-6">
         <div>
           <p className="text-xs text-gray-400 uppercase font-semibold">Current Work</p>
           <h3 className="text-xl font-bold text-gray-900">Requests</h3>
         </div>
-        <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
+        <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full shrink-0 whitespace-nowrap">
           ค้างอยู่ {filteredRequests.length} รายการ
         </span>
       </div>
 
       {/* ค้นหา และ ตัวกรองแท็บ */}
-      <div className="flex items-center justify-between mb-4 gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3 sm:gap-4">
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3 top-3 text-gray-400" />
           <input
@@ -84,13 +84,13 @@ export default function RequestTable({ requests = [], onRefresh }) {
             className="w-full bg-gray-50 border border-gray-200 pl-9 pr-4 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black"
           />
         </div>
-        <div className="flex gap-1 bg-gray-100 p-1 rounded-xl text-xs font-semibold">
+        <div className="flex gap-1 bg-gray-100 p-1 rounded-xl text-xs font-semibold overflow-x-auto">
           {['All', 'In review', 'Ready'].map((tab) => (
             <button
               key={tab}
               type="button"
               onClick={() => setFilterTab(tab)}
-              className={`px-3 py-1.5 rounded-lg transition cursor-pointer ${
+              className={`px-3 py-1.5 rounded-lg transition cursor-pointer whitespace-nowrap flex-1 sm:flex-none ${
                 filterTab === tab
                   ? 'bg-black text-white shadow-xs'
                   : 'text-gray-600 hover:bg-white'
@@ -131,11 +131,11 @@ export default function RequestTable({ requests = [], onRefresh }) {
                     setViewDetailRequest(item);
                   }
                 }}
-                className="flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded-xl transition hover:bg-gray-100/70 hover:border-gray-200 cursor-pointer"
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 bg-gray-50 border border-gray-100 rounded-xl transition hover:bg-gray-100/70 hover:border-gray-200 cursor-pointer"
               >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-semibold text-gray-900">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-sm font-semibold text-gray-900 break-words">
                       {item.project || 'ไม่มีชื่อโปรเจกต์'}
                     </p>
 
@@ -163,7 +163,7 @@ export default function RequestTable({ requests = [], onRefresh }) {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2.5">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 sm:shrink-0">
                   {/* ปุ่ม คืน/แจ้งปัญหา สำหรับนักศึกษาเมื่อได้รับการอนุมัติ */}
                   {!isAdmin && isApproved && (
                     <button

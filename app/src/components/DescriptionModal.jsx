@@ -25,23 +25,23 @@ export default function DescriptionModal({ request, onClose }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in duration-200">
       <div className="bg-white w-full max-w-lg rounded-2xl shadow-xl border border-gray-100 overflow-hidden flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="flex justify-between items-center px-6 py-4 border-b border-gray-100">
+        <div className="flex justify-between items-start gap-3 px-4 sm:px-6 py-4 border-b border-gray-100">
           <div>
             <span className={`inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full border ${getStatusBadge(request.status)}`}>
               {request.status}
             </span>
-            <h3 className="text-lg font-bold text-gray-900 mt-1">รายละเอียดการยืม-เบิกอุปกรณ์</h3>
+            <h3 className="text-base sm:text-lg font-bold text-gray-900 mt-1">รายละเอียดการยืม-เบิกอุปกรณ์</h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition cursor-pointer"
+            className="shrink-0 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition cursor-pointer"
           >
             <X size={18} />
           </button>
         </div>
 
         {/* Content Body */}
-        <div className="p-6 space-y-5 overflow-y-auto">
+        <div className="p-4 sm:p-6 space-y-5 overflow-y-auto">
           {/* ข้อมูลโปรเจกต์ */}
           <div>
             <span className="text-[11px] font-bold uppercase text-gray-400">Project / Subject</span>
@@ -90,8 +90,8 @@ export default function DescriptionModal({ request, onClose }) {
                 const eq = it.equipmentId || {};
                 const isConsumable = eq.type === 'วัสดุสิ้นเปลือง' || it.type === 'วัสดุสิ้นเปลือง';
                 return (
-                  <div key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded-xl border border-gray-100 text-xs">
-                    <div className="flex items-center gap-2">
+                  <div key={idx} className="flex justify-between items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-100 text-xs">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className="font-semibold text-gray-800">{eq.name || it.name || 'อุปกรณ์'}</span>
                       {isConsumable ? (
                         <span className="text-[10px] bg-purple-50 text-purple-600 border border-purple-200 px-1.5 py-0.5 rounded font-medium">

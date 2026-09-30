@@ -61,7 +61,7 @@ export default function BorrowModal({ item, onClose, onSuccess }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl relative flex flex-col md:flex-row border border-gray-100">
+      <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[92dvh] overflow-y-auto shadow-2xl relative flex flex-col md:flex-row border border-gray-100">
         
         {/* ปุ่มปิด */}
         <button
@@ -72,12 +72,12 @@ export default function BorrowModal({ item, onClose, onSuccess }) {
         </button>
 
         {/* ฝั่งซ้าย */}
-        <div className="w-full md:w-5/12 bg-black text-white p-8 flex flex-col justify-between items-center relative min-h-[260px] md:min-h-[380px]">
+        <div className="w-full md:w-5/12 bg-black text-white p-5 sm:p-8 flex flex-col justify-between items-center relative min-h-[200px] md:min-h-[380px]">
           <span className="self-end text-[10px] font-mono text-gray-400 tracking-wider">
             {item.equipCode || item.code || 'EQ-001'}
           </span>
 
-          <div className="w-36 h-36 rounded-full bg-[#111111] border border-gray-800 flex items-center justify-center overflow-hidden my-auto p-2">
+          <div className="w-24 h-24 md:w-36 md:h-36 rounded-full bg-[#111111] border border-gray-800 flex items-center justify-center overflow-hidden my-auto p-2">
             {imageSrc && !imgError ? (
               <img
                 src={imageSrc}
@@ -96,11 +96,11 @@ export default function BorrowModal({ item, onClose, onSuccess }) {
         </div>
 
         {/* ฝั่งขวา */}
-        <div className="w-full md:w-7/12 p-8 flex flex-col justify-between bg-white">
+        <div className="w-full md:w-7/12 p-5 sm:p-8 flex flex-col justify-between bg-white">
           {step === 1 ? (
             <div className="space-y-6">
               <div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
                     {item.equipCode || item.code || 'ITEM'}
                   </span>
@@ -116,7 +116,7 @@ export default function BorrowModal({ item, onClose, onSuccess }) {
                   )}
                 </div>
 
-                <h2 className="text-2xl font-bold text-gray-900 mt-1">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mt-1 break-words">
                   {item.name}
                 </h2>
                 <p className="text-xs text-gray-500 mt-2 leading-relaxed">
@@ -192,7 +192,7 @@ export default function BorrowModal({ item, onClose, onSuccess }) {
                   />
                 </div>
 
-                <div className={`grid ${isConsumable ? 'grid-cols-1' : 'grid-cols-2'} gap-2`}>
+                <div className={`grid ${isConsumable ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'} gap-2`}>
                   <div>
                     <label className="block text-[11px] font-semibold text-gray-600 mb-1">
                       จำนวนที่{isConsumable ? 'เบิก' : 'ยืม'}

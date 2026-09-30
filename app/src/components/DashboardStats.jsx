@@ -100,18 +100,18 @@ export default function DashboardStats({ equipments = [], requests = [] }) {
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-6">
       {stats.map((card, index) => {
         const IconComponent = card.icon;
         return (
           <div
             key={index}
-            className={`p-4 rounded-2xl border transition-all duration-200 ${card.bgColor} ${card.borderColor} ${
+            className={`p-3 sm:p-4 rounded-2xl border transition-all duration-200 ${card.bgColor} ${card.borderColor} ${
               card.highlight ? 'ring-2 ring-red-400 animate-pulse' : 'hover:shadow-sm'
             }`}
           >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-semibold text-gray-500 line-clamp-1">
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <span className="text-[11px] font-semibold text-gray-500 line-clamp-2">
                 {card.title}
               </span>
               <div className={`p-1.5 rounded-lg bg-white/80 shadow-2xs ${card.color}`}>

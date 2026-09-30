@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Search, RefreshCw, UserCheck, AlertCircle } from 'lucide-react';
 import API from '../axios';
+import Pagination from './Pagination';
+import usePagination from './usePagination';
 
 export default function UserMgrTable() {
   const [users, setUsers] = useState([]);
@@ -66,8 +68,11 @@ export default function UserMgrTable() {
     return name.includes(term) || studentId.includes(term) || dept.includes(term);
   });
 
+  const { pagedItems: pagedUsers, currentPage, totalPages, totalItems, pageSize, goToPage, listRef } =
+    usePagination(filteredUsers, 10, searchTerm);
+
   return (
-    <div className="bg-white border border-gray-200 rounded-3xl p-6 sm:p-7 shadow-xs space-y-5">
+    <div ref={listRef} className="bg-white border border-gray-200 rounded-3xl p-4 sm:p-7 shadow-xs space-y-5 scroll-mt-4">
       {/* Header & Search */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-100 pb-4">
         <div>
@@ -120,7 +125,7 @@ export default function UserMgrTable() {
       )}
 
       {/* Users Table */}
-      <div className="overflow-x-auto">
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left border-collapse text-xs">
           <thead>
             <tr className="text-gray-400 font-semibold uppercase text-[10px] border-b border-gray-100">
@@ -140,7 +145,7 @@ export default function UserMgrTable() {
                 </td>
               </tr>
             ) : (
-              filteredUsers.map((u) => {
+              pagedUsers.map((u) => {
                 const isSelf = String(u._id) === String(currentUser._id || currentUser.id);
                 return (
                   <tr key={u._id} className="hover:bg-gray-50/60 transition">
@@ -190,6 +195,69 @@ export default function UserMgrTable() {
           </tbody>
         </table>
       </div>
+
+      {/* Mobile: one card per user instead of a wide table */}
+      <div className="md:hidden space-y-3">
+        {filteredUsers.length === 0 ? (
+          <p className="py-8 text-center text-xs text-gray-400">
+            {loading ? 'กำลังโหลดข้อมูล...' : 'ไม่พบข้อมูลผู้ใช้งาน'}
+          </p>
+        ) : (
+          pagedUsers.map((u) => {
+            const isSelf = String(u._id) === String(currentUser._id || currentUser.id);
+            return (
+              <div key={u._id} className="border border-gray-100 rounded-2xl p-4 space-y-3 text-xs">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-gray-900 break-words">{u.name}</p>
+                    {isSelf && (
+                      <span className="text-[10px] text-emerald-600 font-medium">(บัญชีของคุณ)</span>
+                    )}
+                  </div>
+                  <span
+                    className={`shrink-0 inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                      u.role === 'admin'
+                        ? 'bg-purple-100 text-purple-700'
+                        : u.role === 'อาจารย์'
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'bg-gray-100 text-gray-700'
+                    }`}
+                  >
+                    {u.role}
+                  </span>
+                </div>
+
+                <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-gray-600">
+                  <dt className="text-gray-400">รหัส</dt>
+                  <dd className="font-mono">{u.studentOrStaffId || '-'}</dd>
+                  <dt className="text-gray-400">สาขา</dt>
+                  <dd className="break-words">{u.department || '-'}</dd>
+                  <dt className="text-gray-400">โทร</dt>
+                  <dd className="font-mono">{u.phone || '-'}</dd>
+                </dl>
+
+                <select
+                  value={u.role}
+                  disabled={updatingId === u._id || isSelf}
+                  onChange={(e) => handleRoleChange(u._id, e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-200 text-gray-800 text-xs font-semibold rounded-xl px-2.5 py-2 focus:outline-none focus:ring-1 focus:ring-black cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <option value="นักศึกษา">นักศึกษา</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        pageSize={pageSize}
+        onPageChange={goToPage}
+      />
     </div>
   );
 }

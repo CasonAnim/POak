@@ -13,9 +13,9 @@ export default function LogFilterBar({
   isAdmin,
 }) {
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between mb-4 gap-4">
+    <div className="flex flex-col xl:flex-row items-stretch xl:items-center justify-between mb-4 gap-3 xl:gap-4">
       {/* Search Input Group */}
-      <div className="flex items-center gap-2 w-full sm:flex-1">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full xl:flex-1">
         {/* สำหรับอาจารย์/Admin: ให้มีเมนูล็อกว่าจะค้นด้วยอะไร */}
         {isAdmin && onSearchTypeChange && (
           <select
@@ -53,7 +53,7 @@ export default function LogFilterBar({
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex gap-1 bg-gray-100 p-1 rounded-xl text-xs font-semibold overflow-x-auto w-full sm:w-auto">
+      <div className="flex gap-1 bg-gray-100 p-1 rounded-xl text-xs font-semibold overflow-x-auto w-full xl:w-auto">
         {FILTER_TABS.map((tab) => (
           <button
             key={tab}

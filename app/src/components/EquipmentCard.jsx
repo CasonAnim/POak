@@ -65,14 +65,14 @@ export default function EquipmentCard({ item, onBorrowClick, onUpdated }) {
         </div>
 
         {/* เนื้อหาอุปกรณ์ */}
-        <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+        <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-4">
           <div>
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
               <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400">
                 {item.type || item.category || 'ครุภัณฑ์'}
               </span>
               
-              <div className="flex items-center gap-1.5">
+              <div className="flex flex-wrap items-center gap-1.5">
                 {/* Badge ชนิดวัสดุ */}
                 {isConsumable ? (
                   <span className="text-[10px] font-semibold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-full">
@@ -97,7 +97,7 @@ export default function EquipmentCard({ item, onBorrowClick, onUpdated }) {
               </div>
             </div>
 
-            <h3 className="text-base font-bold text-gray-900">{item.name}</h3>
+            <h3 className="text-base font-bold text-gray-900 break-words">{item.name}</h3>
             <p className="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed">
               {item.details || 'ไม่มีรายละเอียดเพิ่มเติม'}
             </p>
@@ -131,7 +131,7 @@ export default function EquipmentCard({ item, onBorrowClick, onUpdated }) {
           </div>
 
           {/* ยอดคงเหลือ และ ปุ่มเปิดยืม */}
-          <div className="pt-2 flex items-center justify-between border-t border-gray-100">
+          <div className="pt-2 flex items-center justify-between gap-2 border-t border-gray-100">
             <span className="text-xs text-gray-500">
               คงเหลือ: <strong className="text-gray-900">{available}</strong> / {total} ชิ้น
             </span>

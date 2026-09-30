@@ -89,7 +89,7 @@ export default function ReturnIssueModal({ request, onClose, onSuccess }) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl relative border border-gray-100 animate-in fade-in zoom-in-95 duration-150">
+      <div className="bg-white rounded-3xl max-w-lg w-full max-h-[92dvh] overflow-y-auto p-5 sm:p-7 shadow-2xl relative border border-gray-100 animate-in fade-in zoom-in-95 duration-150">
         <button
           onClick={onClose}
           className="absolute right-5 top-5 text-gray-400 hover:text-black p-1 transition cursor-pointer"
@@ -114,14 +114,14 @@ export default function ReturnIssueModal({ request, onClose, onSuccess }) {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-3 max-h-[340px] overflow-y-auto pr-1">
+          <div className="space-y-3 sm:max-h-[340px] sm:overflow-y-auto sm:pr-1">
             {itemsStatus.map((item, idx) => {
               const brokenAmount = item.hasIssue ? Number(item.defectiveAmount || 0) : 0;
               const goodAmount = Math.max(0, item.totalQuantity - brokenAmount);
 
               return (
                 <div key={item.equipmentId || idx} className="p-4 bg-gray-50 rounded-2xl border border-gray-100 space-y-3 text-xs">
-                  <div className="flex justify-between items-center">
+                  <div className="flex flex-wrap justify-between items-center gap-2">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-500">
                         <Package size={16} />
@@ -148,7 +148,7 @@ export default function ReturnIssueModal({ request, onClose, onSuccess }) {
 
                   {item.hasIssue && (
                     <div className="p-3 bg-red-50/70 border border-red-100 rounded-xl space-y-2 animate-in fade-in duration-100">
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <select
                           value={item.issueType}
                           onChange={(e) => handleItemChange(idx, 'issueType', e.target.value)}
@@ -158,7 +158,7 @@ export default function ReturnIssueModal({ request, onClose, onSuccess }) {
                           <option value="สูญหาย">สูญหาย</option>
                         </select>
 
-                        <div className="flex items-center gap-1.5 ml-auto">
+                        <div className="flex items-center gap-1.5 sm:ml-auto">
                           <span className="text-gray-600 text-[11px]">จำนวนที่{item.issueType}:</span>
                           <input
                             type="number"
@@ -182,9 +182,9 @@ export default function ReturnIssueModal({ request, onClose, onSuccess }) {
                     </div>
                   )}
 
-                  <div className="flex justify-between items-center pt-2 border-t border-gray-200/60 text-[11px]">
+                  <div className="flex flex-wrap justify-between items-center gap-x-3 gap-y-1 pt-2 border-t border-gray-200/60 text-[11px]">
                     <span className="text-gray-500">สภาพการคืน:</span>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                       <span className="text-emerald-700 font-semibold flex items-center gap-1">
                         <CheckCircle size={12} /> คืนคลัง: {goodAmount} ชิ้น
                       </span>

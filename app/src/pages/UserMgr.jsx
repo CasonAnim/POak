@@ -13,9 +13,9 @@ export default function UserMgr() {
   }, []);
 
   return (
-    <div className="p-8 max-w-6xl w-full mx-auto space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-6xl w-full mx-auto space-y-6">
       {/* ข้อมูลโปรไฟล์ผู้ใช้งานปัจจุบัน */}
-      <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-xs">
+      <div className="bg-white border border-gray-200 rounded-3xl p-4 sm:p-6 shadow-xs">
         <h2 className="text-xl font-bold text-gray-900 mb-2">ข้อมูลโปรไฟล์</h2>
         <div className="text-xs text-gray-600 space-y-1">
           <p><span className="text-gray-400">ชื่อ:</span> {profile?.name || '-'}</p>

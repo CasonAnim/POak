@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function StatCards({ stats }) {
   return (
-    <div className="grid grid-cols-4 gap-6 mb-8">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
       <div className="bg-[#00C853] text-white p-6 rounded-2xl shadow-sm flex flex-col justify-between h-36">
         <span className="text-sm font-semibold tracking-wide">Open requests</span>
         <div>

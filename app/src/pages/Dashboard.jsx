@@ -44,15 +44,15 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="p-8 max-w-7xl w-full mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
       
       {/* Header Section */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 sm:mb-8 gap-4">
         <div>
           <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-1">
             P.I.M Equipment System
           </p>
-          <h1 className="text-3xl font-extrabold text-gray-900 italic font-serif">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 italic font-serif break-words">
             สวัสดี, {name}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
@@ -62,7 +62,7 @@ export default function Dashboard() {
 
         <Link 
           to="/item" 
-          className="flex items-center gap-2 bg-black text-white px-5 py-3 rounded-xl font-medium shadow-lg hover:bg-gray-800 transition cursor-pointer"
+          className="flex items-center justify-center gap-2 w-full sm:w-auto bg-black text-white px-5 py-3 rounded-xl font-medium shadow-lg hover:bg-gray-800 transition cursor-pointer"
         >
           <Plus size={18} /> ขอยืมอุปกรณ์ใหม่
         </Link>

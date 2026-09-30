@@ -55,7 +55,7 @@ export default function Profile() {
   };
 
   return (
-    <div className="p-8 max-w-4xl w-full mx-auto space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl w-full mx-auto space-y-6">
       {/* 1. ส่วน Profile Card */}
       <div className="bg-white border border-gray-200 rounded-3xl p-6 sm:p-8 shadow-xs">
         <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
@@ -72,27 +72,27 @@ export default function Profile() {
         </div>
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-xl overflow-hidden border border-gray-200 shadow-xs">
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="shrink-0 w-14 h-14 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-xl overflow-hidden border border-gray-200 shadow-xs">
               {user.name ? user.name.slice(0, 2).toUpperCase() : 'US'}
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-gray-900">{user.name}</h3>
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-base font-bold text-gray-900 break-words">{user.name}</h3>
                 <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-gray-100 text-gray-600 border border-gray-200">
                   {user.role}
                 </span>
               </div>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="text-xs text-gray-400 mt-0.5 break-words">
                 รหัส: {user.studentOrStaffId} • สาขา: {user.department || '-'}
               </p>
-              <p className="text-xs text-gray-400">{user.email}</p>
+              <p className="text-xs text-gray-400 break-all">{user.email}</p>
             </div>
           </div>
 
           <button
             onClick={handleSignOut}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 hover:bg-gray-50 hover:text-black transition cursor-pointer shadow-xs"
+            className="flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 hover:bg-gray-50 hover:text-black transition cursor-pointer shadow-xs"
           >
             <LogOut size={14} />
             <span>Sign out</span>

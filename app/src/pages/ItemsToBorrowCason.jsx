@@ -7,6 +7,8 @@ import UploadModal from '../components/UploadModal';
 // คอมโพเนนต์การ์ดและโมดอล
 import EquipmentCard from '../components/EquipmentCard';
 import BorrowModal from '../components/BorrowModal';
+import Pagination from '../components/Pagination';
+import usePagination from '../components/usePagination';
 
 export default function ItemsToBorrowCason() {
   const [equipments, setEquipments] = useState([]);
@@ -74,22 +76,26 @@ export default function ItemsToBorrowCason() {
     return matchesSearch && matchesCategory;
   });
 
+  // 9 per page = 3 rows on the 3-column desktop grid; back to page 1 when search/category changes
+  const { pagedItems, currentPage, totalPages, totalItems, pageSize, goToPage, listRef } =
+    usePagination(filteredEquipments, 9, `${searchTerm}|${selectedCategory}`);
+
   return (
-    <div className="p-8 max-w-7xl w-full mx-auto space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
       {/* Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-700 via-emerald-600 to-green-600 text-white p-10 shadow-sm">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-700 via-emerald-600 to-green-600 text-white p-6 sm:p-10 shadow-sm">
         <div className="relative z-10 max-w-xl">
           <p className="text-xs uppercase tracking-widest text-emerald-200 font-semibold mb-2">
             Reference Library
           </p>
-          <h1 className="text-4xl font-serif font-bold tracking-tight mb-3">
+          <h1 className="text-2xl sm:text-4xl font-serif font-bold tracking-tight mb-3">
             Science, borrow at hand.
           </h1>
           <p className="text-sm text-emerald-100 font-light leading-relaxed">
             A quick index of equipment, specimens, and field tools for your next experiment.
           </p>
         </div>
-        <div className="absolute right-12 top-1/2 -translate-y-1/2 w-40 h-40 rounded-full border border-emerald-400/30 flex items-center justify-center">
+        <div className="absolute right-12 top-1/2 -translate-y-1/2 hidden xl:flex w-40 h-40 rounded-full border border-emerald-400/30 items-center justify-center">
           <div className="w-28 h-28 rounded-full border border-emerald-300/40 flex items-center justify-center">
             <div className="w-16 h-16 rounded-full bg-emerald-500/30 flex items-center justify-center text-2xl font-light">
               <Atom />
@@ -121,7 +127,7 @@ export default function ItemsToBorrowCason() {
       </div>
 
       {/* แถบค้นหา และ หมวดหมู่ */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+      <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
         <div className="relative w-full md:w-80">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
           <input
@@ -160,15 +166,25 @@ export default function ItemsToBorrowCason() {
           ไม่พบรายการอุปกรณ์ที่ค้นหา
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredEquipments.map((item) => (
-            <EquipmentCard
-              key={item._id}
-              item={item}
-              onBorrowClick={(clickedItem) => setSelectedItemForBorrow(clickedItem)}
-              onUpdated={fetchEquipments}
-            />
-          ))}
+        <div ref={listRef} className="space-y-5 scroll-mt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+            {pagedItems.map((item) => (
+              <EquipmentCard
+                key={item._id}
+                item={item}
+                onBorrowClick={(clickedItem) => setSelectedItemForBorrow(clickedItem)}
+                onUpdated={fetchEquipments}
+              />
+            ))}
+          </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={goToPage}
+          />
         </div>
       )}
 
