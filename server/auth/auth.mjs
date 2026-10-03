@@ -31,7 +31,7 @@ export const login = async (req, res) => {
       studentOrStaffId: user.studentOrStaffId
     };
 
-    const secretKey = process.env.JWT_SECRET || 'your_secret_key_here';
+    const secretKey = process.env.JWT_SECRET
     const token = jwt.sign(payload, secretKey, { expiresIn: '1d' });
 
     res.status(200).json({
@@ -68,7 +68,10 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: 'รหัสนักศึกษา/บุคลากรนี้มีในระบบแล้ว' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    const saltRounds = parseInt(process.env.SALT_ROUNDS, 10) || 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
 
     // Mongoose: สร้าง Document และบันทึก
     const newUser = new User({

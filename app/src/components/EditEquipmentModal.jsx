@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Save, AlertCircle } from 'lucide-react';
+import { X, Save, AlertCircle, Trash2 } from 'lucide-react';
 import API from '../axios';
 
 export default function EditEquipmentModal({ item, onClose, onSuccess }) {
@@ -15,6 +15,8 @@ export default function EditEquipmentModal({ item, onClose, onSuccess }) {
   });
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -41,6 +43,23 @@ export default function EditEquipmentModal({ item, onClose, onSuccess }) {
       setErrorMsg(err.response?.data?.message || 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    setErrorMsg('');
+
+    try {
+      await API.delete(`/equipments/${item._id}`);
+      if (typeof onSuccess === 'function') onSuccess();
+      onClose();
+    } catch (err) {
+      console.error('Delete Error:', err);
+      setErrorMsg(err.response?.data?.message || 'เกิดข้อผิดพลาดในการลบอุปกรณ์');
+      setConfirmDelete(false);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -177,25 +196,66 @@ export default function EditEquipmentModal({ item, onClose, onSuccess }) {
             />
           </div>
 
-          <div className="pt-2 flex gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl font-semibold transition cursor-pointer"
-            >
-              ยกเลิก
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 bg-black hover:bg-gray-800 text-white py-2.5 rounded-xl font-semibold transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5"
-            >
-              <Save size={14} />
-              <span>{loading ? 'กำลังบันทึก...' : 'บันทึกการแก้ไข'}</span>
-            </button>
-          </div>
+          {confirmDelete ? (
+            /* ขั้นตอนยืนยันการลบ */
+            <div className="mt-2 p-3.5 bg-red-50 border border-red-200 rounded-2xl space-y-3">
+              <div className="flex items-start gap-2 text-red-700">
+                <AlertCircle size={15} className="shrink-0 mt-0.5" />
+                <p className="text-xs leading-relaxed">
+                  ต้องการลบ <strong className="break-words">{item.name}</strong> ออกจากระบบถาวรใช่หรือไม่?
+                  การลบนี้ไม่สามารถกู้คืนได้
+                </p>
+              </div>
+              <div className="flex flex-col-reverse sm:flex-row gap-2">
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(false)}
+                  disabled={deleting}
+                  className="flex-1 bg-white hover:bg-gray-100 border border-gray-200 text-gray-700 py-2.5 rounded-xl font-semibold transition cursor-pointer disabled:opacity-50"
+                >
+                  ยกเลิก
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl font-semibold transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <Trash2 size={14} />
+                  <span>{deleting ? 'กำลังลบ...' : 'ยืนยันการลบ'}</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="pt-2 flex flex-col sm:flex-row gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(true)}
+                disabled={loading}
+                className="sm:mr-auto flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 font-semibold transition cursor-pointer disabled:opacity-50"
+              >
+                <Trash2 size={14} />
+                <span>ลบอุปกรณ์</span>
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="sm:flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl font-semibold transition cursor-pointer"
+              >
+                ยกเลิก
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="sm:flex-1 bg-black hover:bg-gray-800 text-white py-2.5 rounded-xl font-semibold transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <Save size={14} />
+                <span>{loading ? 'กำลังบันทึก...' : 'บันทึกการแก้ไข'}</span>
+              </button>
+            </div>
+          )}
         </form>
       </div>
     </div>
   );
-} 
+}
