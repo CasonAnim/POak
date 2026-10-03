@@ -31,7 +31,7 @@ export const login = async (req, res) => {
       studentOrStaffId: user.studentOrStaffId
     };
 
-    const secretKey = process.env.JWT_SECRET
+    const secretKey = process.env.JWT_SECRET || 'your_secret_key_here';
     const token = jwt.sign(payload, secretKey, { expiresIn: '1d' });
 
     res.status(200).json({
@@ -53,7 +53,8 @@ export const login = async (req, res) => {
 // ฟังก์ชัน Register
 export const register = async (req, res) => {
   try {
-    const { password, name, role, department, phone } = req.body;
+    // ไม่รับ role จาก request เด็ดขาด — กันคนสมัครเป็น admin/อาจารย์เองได้
+    const { password, name, department, phone } = req.body;
     const studentOrStaffId = (req.body.studentOrStaffId || req.body.studentId || req.body.staffstudentId || '').trim();
 
     if (!password || !name || !studentOrStaffId) {
@@ -68,10 +69,12 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: 'รหัสนักศึกษา/บุคลากรนี้มีในระบบแล้ว' });
     }
 
-    
-    const saltRounds = parseInt(process.env.SALT_ROUNDS, 10) || 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    // บัญชีแรกของระบบ (ฐานข้อมูลยังว่าง) จะเป็น admin อัตโนมัติ เพื่อให้มีคนเริ่มจัดการระบบได้
+    // ทุกบัญชีหลังจากนั้นจะเป็น 'นักศึกษา' เสมอ — แอดมินเป็นคนเลื่อนบทบาทให้เองที่หน้า "จัดการผู้ใช้"
+    const hasUsers = await User.exists({});
+    const assignedRole = hasUsers ? 'นักศึกษา' : 'admin';
 
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     // Mongoose: สร้าง Document และบันทึก
     const newUser = new User({
@@ -80,7 +83,7 @@ export const register = async (req, res) => {
       department: department || '',
       phone: phone || '',
       password: hashedPassword,
-      role: role || 'นักศึกษา'
+      role: assignedRole
     });
 
     const savedUser = await newUser.save();
