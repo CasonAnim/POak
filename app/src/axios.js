@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-    baseURL: 'http://localhost:5050/api', // ชี้ไปที่ Backend ของเรา
+    baseURL: import.meta.env.VITE_URL || 'http://localhost:5050/api', // ชี้ไปที่ Backend ของเรา
 });
 
 // แนบ Token ไปกับทุก Request อัตโนมัติถ้ามีการ Login ไว้
