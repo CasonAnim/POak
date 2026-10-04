@@ -93,6 +93,7 @@ export default function Register() {
   const [formData, setFormData] = useState({
     studentId: '',
     name: '',
+    email: '',
     department: '',
     phone: '',
     password: '',
@@ -129,6 +130,7 @@ export default function Register() {
       await API.post('/auth/register', {
         ...formData,
         studentId: formData.studentId.trim(),
+        email: formData.email.trim(),
         role: 'นักศึกษา'
       });
       setSuccessMsg('ลงทะเบียนนักศึกษาสำเร็จ! กำลังพากลับไปหน้าเข้าสู่ระบบ...');
@@ -141,7 +143,7 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] flex flex-col items-center justify-center p-4">
+    <div className="min-h-dvh bg-[#F8F9FA] flex flex-col items-center justify-center p-4 py-8">
       {/* โลโก้ */}
       <div className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <img
@@ -151,7 +153,7 @@ export default function Register() {
         />
       </div>
 
-      <div className="bg-white w-full max-w-xl p-8 rounded-3xl border border-gray-100 shadow-xl shadow-gray-200/50 relative z-10 animate-in fade-in zoom-in-95 duration-500">
+      <div className="bg-white w-full max-w-xl p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-xl shadow-gray-200/50 relative z-10 animate-in fade-in zoom-in-95 duration-500">
         <div className="mb-6 text-center">
           <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">
             Student Registration
@@ -208,6 +210,22 @@ export default function Register() {
 
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-1 ml-1">
+              อีเมล (Email)
+            </label>
+            <input
+              type="email"
+              name="email"
+              required
+              autoComplete="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="name@example.com"
+              className="w-full bg-gray-50 border border-gray-200 px-3.5 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1 ml-1">
               คณะ / สาขาวิชา
             </label>
             <select
@@ -215,7 +233,7 @@ export default function Register() {
               required
               value={formData.department}
               onChange={handleChange}
-              className="w-full bg-gray-50 border border-gray-200 px-3.5 py-2.5 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-black cursor-pointer truncate"
+              className="w-full bg-gray-50 border border-gray-200 px-3.5 py-2.5 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-black cursor-pointer truncate min-w-0"
             >
               <option value="" disabled>-- เลือกคณะและสาขาวิชา --</option>
               {PIM_FACULTIES.map((group, gIdx) => (

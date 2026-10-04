@@ -41,7 +41,8 @@ export const login = async (req, res) => {
         id: user._id,
         name: user.name,
         role: user.role,
-        studentOrStaffId: user.studentOrStaffId
+        studentOrStaffId: user.studentOrStaffId,
+        email: user.email || ''
       }
     });
   } catch (error) {
@@ -55,6 +56,7 @@ export const register = async (req, res) => {
   try {
     // ไม่รับ role จาก request เด็ดขาด — กันคนสมัครเป็น admin/อาจารย์เองได้
     const { password, name, department, phone } = req.body;
+    const email = typeof req.body.email === 'string' ? req.body.email.trim().toLowerCase() : '';
     const studentOrStaffId = (req.body.studentOrStaffId || req.body.studentId || req.body.staffstudentId || '').trim();
 
     if (!password || !name || !studentOrStaffId) {
@@ -69,6 +71,17 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: 'รหัสนักศึกษา/บุคลากรนี้มีในระบบแล้ว' });
     }
 
+    // อีเมลไม่บังคับ แต่ถ้ากรอกต้องถูกรูปแบบและไม่ซ้ำกับคนอื่น
+    if (email) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(400).json({ message: 'รูปแบบอีเมลไม่ถูกต้อง' });
+      }
+      const existingEmail = await User.findOne({ email });
+      if (existingEmail) {
+        return res.status(400).json({ message: 'อีเมลนี้มีในระบบแล้ว' });
+      }
+    }
+
     // บัญชีแรกของระบบ (ฐานข้อมูลยังว่าง) จะเป็น admin อัตโนมัติ เพื่อให้มีคนเริ่มจัดการระบบได้
     // ทุกบัญชีหลังจากนั้นจะเป็น 'นักศึกษา' เสมอ — แอดมินเป็นคนเลื่อนบทบาทให้เองที่หน้า "จัดการผู้ใช้"
     const hasUsers = await User.exists({});
@@ -80,6 +93,8 @@ export const register = async (req, res) => {
     const newUser = new User({
       studentOrStaffId,
       name: name.trim(),
+      // ใส่ฟิลด์ email เฉพาะตอนที่มีค่า (กัน '' ไปชนกับ unique index)
+      ...(email && { email }),
       department: department || '',
       phone: phone || '',
       password: hashedPassword,
@@ -93,6 +108,10 @@ export const register = async (req, res) => {
     });
   } catch (error) {
     console.error('Register Error:', error);
+    // กรณี 2 คนสมัครด้วยอีเมลเดียวกันพร้อมกัน (ชน unique index)
+    if (error.code === 11000) {
+      return res.status(400).json({ message: 'รหัสประจำตัวหรืออีเมลนี้มีในระบบแล้ว' });
+    }
     res.status(500).json({ message: 'เกิดข้อผิดพลาดในการลงทะเบียน' });
   }
 };
@@ -112,6 +131,7 @@ export const me = async (req, res) => {
         id: user._id,
         name: user.name,
         studentOrStaffId: user.studentOrStaffId,
+        email: user.email || '',
         department: user.department,
         phone: user.phone,
         role: user.role

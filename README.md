@@ -56,7 +56,7 @@ Base URL: `/api` · ส่ง Token ใน header `Authorization: Bearer <token>
 | Method | Path | สิทธิ์ | คำอธิบาย |
 |--------|------|--------|----------|
 | POST | `/auth/login` | ทุกคน | เข้าสู่ระบบ (`studentId`, `password`) ได้ token |
-| POST | `/auth/register` | ทุกคน | สมัครสมาชิก (`studentOrStaffId`, `name`, `password`, `department`, `phone`) |
+| POST | `/auth/register` | ทุกคน | สมัครสมาชิก (`studentOrStaffId`, `name`, `password`, `email`, `department`, `phone`) |
 | GET | `/auth/me` | ล็อกอิน | ข้อมูลผู้ใช้ปัจจุบัน |
 | GET | `/equipments` | ล็อกอิน | รายการอุปกรณ์ทั้งหมด |
 | POST | `/equipments` | แอดมิน | เพิ่มอุปกรณ์ (multipart, ไฟล์รูปชื่อ field `image`) |
